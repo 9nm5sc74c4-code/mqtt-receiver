@@ -1,0 +1,16 @@
+*.iml
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.apk
+*.aab
+*.zip
+*.log
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+*.keystore
+!gradle/wrapper/gradle-wrapper.jar
