@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0F2F5">
+
+    <!-- 顶部栏 -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1565C0"
+        app:title="MQTT 仪表盘"
+        app:titleTextColor="@android:color/white">
+
+        <TextView
+            android:id="@+id/tv_connection_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="已连接"
+            android:textSize="11sp"
+            android:textColor="#BBDEFB"
+            android:gravity="center"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btn_disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="退出"
+            android:textSize="13sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#C62828"
+            android:minWidth="0dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:cornerRadius="18dp" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- 状态条 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                app:contentPadding="12dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/status_indicator"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:gravity="center"
+                        android:background="#E8F5E9"
+                        android:padding="4dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="●"
+                            android:textColor="#4CAF50"
+                            android:textSize="24sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_topic"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/status_indicator"
+                        android:layout_marginStart="12dp"
+                        android:text="主题: --"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_update_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/status_indicator"
+                        android:layout_below="@id/tv_topic"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="2dp"
+                        android:text="等待数据..."
+                        android:textSize="12sp"
+                        android:textColor="#999999" />
+                </RelativeLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 数据卡片标题 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📊 实时数据"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333" />
+
+                <TextView
+                    android:id="@+id/tv_value_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 个字段"
+                    android:textSize="12sp"
+                    android:textColor="#999999"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btn_clear_data"
+                    android:layout_width="60dp"
+                    android:layout_height="28dp"
+                    android:text="清除"
+                    android:textSize="11sp"
+                    android:textColor="#666666"
+                    android:backgroundTint="#E0E0E0"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    app:cornerRadius="14dp" />
+
+            </LinearLayout>
+
+            <!-- 数据卡片容器 -->
+            <LinearLayout
+                android:id="@+id/data_card_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="4dp"
+                    app:cardElevation="1dp"
+                    app:cardCornerRadius="10dp"
+                    app:contentPadding="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="等待 MQTT 数据..."
+                            android:textSize="14sp"
+                            android:textColor="#999999" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="连接成功后数据将自动显示在这里"
+                            android:textSize="12sp"
+                            android:textColor="#CCCCCC"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- JSON 原始数据 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <Button
+                    android:id="@+id/btn_toggle_json"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:text="▼ 展开原始 JSON"
+                    android:textSize="13sp"
+                    android:textColor="#1565C0"
+                    android:backgroundTint="#E3F2FD"
+                    app:cornerRadius="8dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/json_raw_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginTop="4dp"
+                    app:cardElevation="1dp"
+                    app:cardCornerRadius="8dp"
+                    app:contentPadding="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_json_raw"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace"
+                        android:textColor="#1A237E"
+                        android:lineSpacingExtra="2dp"
+                        android:background="#F5F5F5"
+                        android:padding="8dp"
+                        android:text="" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

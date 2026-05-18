@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 
 /**
  * MQTT 前台服务
- * 在后台保持 MQTT 连接，即使 APP 退出也能持续接收消息
+ * 后台保持 MQTT 连接，数据通过 MqttDataHolder 推送到仪表盘
  */
 class MqttForegroundService : Service() {
 
@@ -24,11 +24,17 @@ class MqttForegroundService : Service() {
         @Volatile
         var isRunning = false
             private set
+
+        /** 连接成功回调（通知 MainActivity 跳转到仪表盘） */
+        @Volatile
+        var onConnectSuccess: (() -> Unit)? = null
+
+        /** 连接失败回调 */
+        @Volatile
+        var onConnectError: ((String) -> Unit)? = null
     }
 
     private val mqttManager = MqttManager()
-    private var lastMessageTopic = ""
-    private var lastMessagePayload = ""
 
     override fun onCreate() {
         super.onCreate()
@@ -39,7 +45,7 @@ class MqttForegroundService : Service() {
         when (intent?.action) {
             "CONNECT" -> {
                 val brokerUrl = intent.getStringExtra("broker_url") ?: return START_NOT_STICKY
-                val topic = intent.getStringExtra("topic") ?: "#"
+                val topic = intent.getStringExtra("topic") ?: "ch6pem2"
                 val clientId = intent.getStringExtra("client_id") ?: "Android_${(1000..9999).random()}"
                 val username = intent.getStringExtra("username")
                 val password = intent.getStringExtra("password")
@@ -52,18 +58,10 @@ class MqttForegroundService : Service() {
                 disconnectMqtt()
             }
         }
-
         return START_STICKY
     }
 
-    private fun connectMqtt(
-        brokerUrl: String,
-        clientId: String,
-        username: String?,
-        password: String?,
-        topic: String
-    ) {
-        // 在后台线程连接
+    private fun connectMqtt(brokerUrl: String, clientId: String, username: String?, password: String?, topic: String) {
         Thread {
             mqttManager.connect(
                 brokerUrl = brokerUrl,
@@ -73,9 +71,12 @@ class MqttForegroundService : Service() {
                 topic = topic,
                 onConnected = {
                     isRunning = true
-                    updateNotification("已连接 - $brokerUrl", "订阅: $topic")
+                    updateNotification("已连接", "订阅: $topic")
                     logToUI("✅ 已连接到 $brokerUrl")
                     logToUI("✅ 已订阅: $topic")
+
+                    // 通知 MainActivity 连接成功 -> 跳转仪表盘
+                    onConnectSuccess?.invoke()
                 },
                 onDisconnected = { cause ->
                     isRunning = false
@@ -84,18 +85,18 @@ class MqttForegroundService : Service() {
                     logToUI("⚠️ 连接断开: $reason (自动重连中...)")
                 },
                 onMessage = { msgTopic, payload ->
-                    lastMessageTopic = msgTopic
-                    lastMessagePayload = payload
-                    updateNotification(
-                        "$msgTopic",
-                        if (payload.length > 100) payload.take(100) + "..." else payload
-                    )
-                    logToUI("📩 $msgTopic → $payload")
+                    // 解析数据并推送到仪表盘
+                    MqttDataHolder.update(msgTopic, payload)
+                    // 更新通知
+                    val firstField = MqttDataHolder.parsedData.entries.firstOrNull()
+                    val summary = if (firstField != null) "${firstField.key}=${firstField.value}" else payload.take(80)
+                    updateNotification("📩 $msgTopic", summary)
                 },
                 onError = { error ->
                     isRunning = false
                     updateNotification("连接失败", error)
                     logToUI("❌ $error")
+                    onConnectError?.invoke(error)
                     stopSelf()
                 }
             )
@@ -106,6 +107,7 @@ class MqttForegroundService : Service() {
         Thread {
             mqttManager.disconnect()
             isRunning = false
+            MqttDataHolder.reset()
             logToUI("🔌 已断开连接")
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -118,13 +120,9 @@ class MqttForegroundService : Service() {
         nm.notify(NOTIFICATION_ID, notification)
     }
 
-    private fun buildNotification(
-        content: String,
-        title: String = "MQTT Receiver"
-    ): Notification {
+    private fun buildNotification(content: String, title: String = "MQTT Receiver"): Notification {
         val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
+            this, 0,
             Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             },
