@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 圆形背景 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+    <!-- MQTT 字母 M 样式 -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M34,68L34,40L44,54L54,40L54,68" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M54,68L54,40L64,54L74,40L74,68" />
+    <!-- 信号波纹 -->
+    <path
+        android:strokeColor="#42A5F5"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M82,38C82,38 86,42 86,50C86,58 82,62 82,62" />
+    <path
+        android:strokeColor="#42A5F5"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M88,30C88,30 94,38 94,50C94,62 88,70 88,70" />
+</vector>
