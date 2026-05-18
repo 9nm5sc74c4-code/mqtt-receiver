@@ -11,8 +11,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 
 /**
- * MQTT 鍓嶅彴鏈嶅姟
- * 鍦ㄥ悗鍙颁繚鎸?MQTT 杩炴帴锛屽嵆浣?APP 閫€鍑轰篃鑳芥寔缁帴鏀舵秷鎭? */
+ * MQTT 前台服务
+ * 在后台保持 MQTT 连接，即使 APP 退出也能持续接收消息
+ */
 class MqttForegroundService : Service() {
 
     companion object {
@@ -43,7 +44,7 @@ class MqttForegroundService : Service() {
                 val username = intent.getStringExtra("username")
                 val password = intent.getStringExtra("password")
 
-                startForeground(NOTIFICATION_ID, buildNotification("姝ｅ湪杩炴帴..."))
+                startForeground(NOTIFICATION_ID, buildNotification("正在连接..."))
                 connectMqtt(brokerUrl, clientId, username, password, topic)
             }
 
@@ -62,7 +63,8 @@ class MqttForegroundService : Service() {
         password: String?,
         topic: String
     ) {
-        // 鍦ㄥ悗鍙扮嚎绋嬭繛鎺?        Thread {
+        // 在后台线程连接
+        Thread {
             mqttManager.connect(
                 brokerUrl = brokerUrl,
                 clientId = clientId,
@@ -71,15 +73,15 @@ class MqttForegroundService : Service() {
                 topic = topic,
                 onConnected = {
                     isRunning = true
-                    updateNotification("宸茶繛鎺?- $brokerUrl", "璁㈤槄: $topic")
-                    logToUI("鉁?宸茶繛鎺ュ埌 $brokerUrl")
-                    logToUI("鉁?宸茶闃? $topic")
+                    updateNotification("已连接 - $brokerUrl", "订阅: $topic")
+                    logToUI("✅ 已连接到 $brokerUrl")
+                    logToUI("✅ 已订阅: $topic")
                 },
                 onDisconnected = { cause ->
                     isRunning = false
-                    val reason = cause?.message ?: "鏈煡鍘熷洜"
-                    updateNotification("宸叉柇寮€", reason)
-                    logToUI("鈿狅笍 杩炴帴鏂紑: $reason (鑷姩閲嶈繛涓?..)")
+                    val reason = cause?.message ?: "未知原因"
+                    updateNotification("已断开", reason)
+                    logToUI("⚠️ 连接断开: $reason (自动重连中...)")
                 },
                 onMessage = { msgTopic, payload ->
                     lastMessageTopic = msgTopic
@@ -88,12 +90,12 @@ class MqttForegroundService : Service() {
                         "$msgTopic",
                         if (payload.length > 100) payload.take(100) + "..." else payload
                     )
-                    logToUI("馃摡 $msgTopic 鈫?$payload")
+                    logToUI("📩 $msgTopic → $payload")
                 },
                 onError = { error ->
                     isRunning = false
-                    updateNotification("杩炴帴澶辫触", error)
-                    logToUI("鉂?$error")
+                    updateNotification("连接失败", error)
+                    logToUI("❌ $error")
                     stopSelf()
                 }
             )
@@ -104,7 +106,7 @@ class MqttForegroundService : Service() {
         Thread {
             mqttManager.disconnect()
             isRunning = false
-            logToUI("馃攲 宸叉柇寮€杩炴帴")
+            logToUI("🔌 已断开连接")
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }.start()
