@@ -21,6 +21,11 @@ import com.mqttreceiver.app.databinding.ActivityMainBinding
  */
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        /** 日志回调（供 MqttForegroundService 使用） */
+        var logCallback: ((String) -> Unit)? = null
+    }
+
     private lateinit var binding: ActivityMainBinding
     private var isPasswordVisible = false
 

@@ -2,22 +2,35 @@ package com.mqttreceiver.app
 
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import com.mqttreceiver.app.databinding.ActivityDashboardBinding
 
-/**
- * 数据仪表盘 Activity
- * 第二级界面：连接成功后显示实时 MQTT 数据（参照 Web 版 mqtt_dashboard）
- */
 class DataDashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
+
+    // 根据字段名分配不同的颜色主题
+    private val colorThemes = listOf(
+        intArrayOf("#1A73E8", "#E8F0FE"), // 蓝色
+        intArrayOf("#34A853", "#E6F4EA"), // 绿色
+        intArrayOf("#FBBC04", "#FEF7E0"), // 黄色
+        intArrayOf("#EA4335", "#FCE8E6"), // 红色
+        intArrayOf("#9334E6", "#F3E8FD"), // 紫色
+        intArrayOf("#FF6D01", "#FEE8D6"), // 橙色
+        intArrayOf("#00ACC1", "#E0F7FA"), // 青色
+        intArrayOf("#E91E63", "#FCE4EC"), // 粉色
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,12 +39,10 @@ class DataDashboardActivity : AppCompatActivity() {
 
         setupUI()
 
-        // 注册数据更新回调
         MqttDataHolder.onDataChanged = { dataMap ->
             runOnUiThread { updateDashboard(dataMap) }
         }
 
-        // 如果已经有数据，立即显示
         if (MqttDataHolder.parsedData.isNotEmpty()) {
             updateDashboard(MqttDataHolder.parsedData)
             updateConnectionInfo()
@@ -40,20 +51,18 @@ class DataDashboardActivity : AppCompatActivity() {
 
     private fun setupUI() {
         binding.btnDisconnect.setOnClickListener { disconnectAndExit() }
-
-        binding.btnToggleJson.setOnClickListener {
-            val visible = binding.jsonRawLayout.isVisible
-            binding.jsonRawLayout.visibility = if (visible) View.GONE else View.VISIBLE
-            binding.btnToggleJson.text = if (visible) "▼ 展开原始 JSON" else "▲ 收起原始 JSON"
-        }
-
         binding.btnClearData.setOnClickListener {
             MqttDataHolder.reset()
             binding.dataCardContainer.removeAllViews()
-            binding.tvJsonRaw.text = ""
-            binding.tvTopic.text = ""
+            binding.emptyStateCard.visibility = View.VISIBLE
+            binding.tvTopic.text = "主题: --"
             binding.tvUpdateTime.text = ""
-            binding.tvValueCount.text = "0"
+            binding.tvValueCount.text = "0 个字段"
+        }
+
+        binding.cardViewJson.setOnClickListener {
+            val intent = Intent(this, RawJsonActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -61,27 +70,38 @@ class DataDashboardActivity : AppCompatActivity() {
         binding.tvTopic.text = "主题: ${MqttDataHolder.topic}"
         binding.tvUpdateTime.text = "更新: ${MqttDataHolder.lastUpdateTime}"
         binding.tvValueCount.text = "${data.size} 个字段"
+        binding.emptyStateCard.visibility = View.GONE
 
-        binding.tvJsonRaw.text = MqttDataHolder.rawJson
-
-        // 动态生成数据卡片
+        val visibleCount = data.count { !it.key.startsWith("_") }
         binding.dataCardContainer.removeAllViews()
+
+        var themeIndex = 0
         for ((key, value) in data) {
-            if (key.startsWith("_")) continue  // 跳过元数据
-            addDataCard(key, value)
+            if (key.startsWith("_")) continue
+            addBeautifiedCard(key, value, colorThemes[themeIndex % colorThemes.size])
+            themeIndex++
+        }
+
+        if (visibleCount == 0) {
+            binding.emptyStateCard.visibility = View.VISIBLE
         }
     }
 
-    private fun addDataCard(key: String, value: Any) {
-        val card = layoutInflater.inflate(R.layout.item_data_card, binding.dataCardContainer, false)
+    private fun addBeautifiedCard(key: String, value: Any, theme: IntArray) {
+        val accentColor = Color.parseColor(theme[0])
+        val bgColor = Color.parseColor(theme[1])
+
+        val card = layoutInflater.inflate(R.layout.item_data_card, binding.dataCardContainer, false) as com.google.android.material.card.MaterialCardView
 
         val tvKey = card.findViewById<TextView>(R.id.tv_key)
         val tvValue = card.findViewById<TextView>(R.id.tv_value)
         val tvUnit = card.findViewById<TextView>(R.id.tv_unit)
+        val keyDot = card.findViewById<View>(R.id.key_dot)
+
+        keyDot?.setBackgroundColor(accentColor)
 
         tvKey.text = key
 
-        // 尝试提取数值
         val numValue = when (value) {
             is Number -> value.toDouble()
             is String -> value.toDoubleOrNull()
@@ -97,13 +117,21 @@ class DataDashboardActivity : AppCompatActivity() {
 
             val unit = guessUnit(key, numValue)
             tvUnit.text = unit
-            tvUnit.isVisible = unit.isNotEmpty()
+            tvUnit.visibility = if (unit.isNotEmpty()) View.VISIBLE else View.GONE
 
-            tvValue.setTextColor(getThresholdColor(key, numValue))
+            val alertColor = getAlertColor(key, numValue)
+            if (alertColor != null) {
+                tvValue.setTextColor(alertColor)
+                card.setCardBackgroundColor(Color.parseColor("#FFF5F5"))
+            } else {
+                tvValue.setTextColor(accentColor)
+                card.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
+            }
         } else {
             tvValue.text = value.toString()
-            tvUnit.isVisible = false
-            tvValue.setTextColor(Color.parseColor("#555555"))
+            tvUnit.visibility = View.GONE
+            tvValue.setTextColor(Color.parseColor("#5F6368"))
+            card.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
         }
 
         binding.dataCardContainer.addView(card)
@@ -113,38 +141,45 @@ class DataDashboardActivity : AppCompatActivity() {
         val k = key.lowercase()
         return when {
             k.contains("temp") || k.contains("temperature") -> "°C"
-            k.contains("volt") || k.endsWith("_v") -> "V"
+            k.contains("volt") || k.endsWith("_v") || k.contains("voltage") -> "V"
             k.contains("current") || k.endsWith("_a") || k.contains("amp") -> "A"
-            k.contains("power") -> "W"
-            k.contains("press") -> "MPa"
-            k.contains("level") -> "%"
-            k.contains("humid") -> "%"
-            k.contains("cond") -> "μS/cm"
+            k.contains("power") || k.endsWith("_w") || k.contains("watt") -> "W"
+            k.contains("press") || k.endsWith("_p") || k.contains("pressure") -> "MPa"
+            k.contains("level") || k.contains("percent") -> "%"
+            k.contains("humid") || k.contains("humi") -> "%"
+            k.contains("cond") || k.contains("conduct") -> "μS/cm"
             k.contains("ph") -> "pH"
-            k.contains("freq") -> "Hz"
+            k.contains("freq") || k.contains("hz") -> "Hz"
             k.contains("flow") -> "m³/h"
-            k.contains("speed") -> "r/min"
+            k.contains("speed") || k.contains("rpm") -> "r/min"
             k.matches(Regex("^ch\\d+")) -> "V"
+            k.contains("energy") || k.contains("kwh") -> "kWh"
+            k.contains("h2") || k.contains("hydrogen") -> "ppm"
+            k.contains("o2") || k.contains("oxygen") -> "%"
+            k.contains("co2") -> "ppm"
             else -> ""
         }
     }
 
-    private fun getThresholdColor(key: String, value: Double): Int {
+    private fun getAlertColor(key: String, value: Double): Int? {
         val k = key.lowercase()
-        val orange = Color.parseColor("#FF8C00")
+        val red = Color.parseColor("#D93025")
+        val orange = Color.parseColor("#E37400")
         return when {
-            k.contains("temp") && value > 80 -> Color.RED
+            k.contains("temp") && value > 80 -> red
             k.contains("temp") && value > 60 -> orange
-            (k.contains("volt") || k.matches(Regex("^ch\\d+"))) && value > 400 -> Color.RED
+            (k.contains("volt") || k.matches(Regex("^ch\\d+"))) && value > 400 -> red
             (k.contains("volt") || k.matches(Regex("^ch\\d+"))) && value > 250 -> orange
-            k.contains("press") && value > 1.5 -> Color.RED
+            k.contains("press") && value > 1.5 -> red
             k.contains("press") && value > 1.0 -> orange
-            else -> Color.parseColor("#1B5E20")
+            k.contains("level") && value > 95 -> orange
+            k.contains("level") && value < 5 -> red
+            else -> null
         }
     }
 
     private fun updateConnectionInfo() {
-        binding.tvConnectionInfo.text = "已连接: ${SecurePrefs.getBroker()}:${SecurePrefs.getPort()}"
+        binding.tvConnectionInfo.text = "已连接: ${SecurePrefs.getBroker()}"
     }
 
     private fun disconnectAndExit() {

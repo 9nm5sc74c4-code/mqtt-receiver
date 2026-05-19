@@ -4,39 +4,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F0F2F5">
+    android:background="#F0F4F8">
 
     <!-- 顶部栏 -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#1565C0"
-        app:title="MQTT 仪表盘"
-        app:titleTextColor="@android:color/white">
+        android:background="#1A73E8"
+        app:title="📊 数据仪表盘"
+        app:titleTextColor="@android:color/white"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6">
 
-        <TextView
-            android:id="@+id/tv_connection_info"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="已连接"
-            android:textSize="11sp"
-            android:textColor="#BBDEFB"
-            android:gravity="center"
-            android:layout_marginEnd="8dp" />
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="4dp">
 
-        <Button
-            android:id="@+id/btn_disconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="退出"
-            android:textSize="13sp"
-            android:textColor="@android:color/white"
-            android:backgroundTint="#C62828"
-            android:minWidth="0dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            app:cornerRadius="18dp" />
+            <TextView
+                android:id="@+id/tv_connection_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已连接"
+                android:textSize="10sp"
+                android:textColor="#B3E5FC"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_disconnect"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="断开"
+                android:textSize="12sp"
+                android:textColor="#FFCDD2"
+                android:backgroundTint="#C62828"
+                app:cornerRadius="16dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp" />
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>
 
@@ -51,33 +64,36 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- 状态条 -->
+            <!-- 状态卡片 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="12dp"
-                app:contentPadding="12dp">
+                android:layout_marginBottom="10dp"
+                app:cardElevation="3dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:contentPadding="14dp"
+                app:strokeWidth="0dp">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
+                    <!-- 状态指示灯 -->
                     <LinearLayout
                         android:id="@+id/status_indicator"
-                        android:layout_width="46dp"
-                        android:layout_height="46dp"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
                         android:gravity="center"
-                        android:background="#E8F5E9"
+                        android:background="@drawable/circle_status_bg"
                         android:padding="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="●"
-                            android:textColor="#4CAF50"
-                            android:textSize="24sp" />
+                            android:textColor="#34A853"
+                            android:textSize="22sp" />
                     </LinearLayout>
 
                     <TextView
@@ -85,11 +101,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/status_indicator"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="主题: --"
                         android:textSize="14sp"
-                        android:textColor="#333333"
-                        android:textStyle="bold" />
+                        android:textColor="#202124"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/tv_update_time"
@@ -97,22 +115,22 @@
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/status_indicator"
                         android:layout_below="@id/tv_topic"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_marginTop="2dp"
                         android:text="等待数据..."
                         android:textSize="12sp"
-                        android:textColor="#999999" />
+                        android:textColor="#5F6368" />
                 </RelativeLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 数据卡片标题 -->
+            <!-- 数据区标题栏 + 操作按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="6dp"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp">
 
@@ -120,10 +138,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="📊 实时数据"
-                    android:textSize="15sp"
+                    android:text="📈 实时数据"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#333333" />
+                    android:textColor="#202124" />
 
                 <TextView
                     android:id="@+id/tv_value_count"
@@ -131,20 +149,22 @@
                     android:layout_height="wrap_content"
                     android:text="0 个字段"
                     android:textSize="12sp"
-                    android:textColor="#999999"
+                    android:textColor="#80868B"
                     android:layout_marginEnd="8dp" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear_data"
-                    android:layout_width="60dp"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="52dp"
                     android:layout_height="28dp"
                     android:text="清除"
                     android:textSize="11sp"
-                    android:textColor="#666666"
-                    android:backgroundTint="#E0E0E0"
-                    android:minWidth="0dp"
-                    android:padding="0dp"
-                    app:cornerRadius="14dp" />
+                    android:textColor="#5F6368"
+                    android:backgroundTint="#E8EAED"
+                    app:cornerRadius="14dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:padding="0dp" />
 
             </LinearLayout>
 
@@ -155,13 +175,17 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- 空状态占位 -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/empty_state_card"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="100dp"
                     android:layout_marginBottom="4dp"
                     app:cardElevation="1dp"
-                    app:cardCornerRadius="10dp"
-                    app:contentPadding="0dp">
+                    app:cardCornerRadius="12dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:contentPadding="0dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -172,64 +196,93 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="等待 MQTT 数据..."
-                            android:textSize="14sp"
-                            android:textColor="#999999" />
+                            android:text="📡"
+                            android:textSize="28sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="连接成功后数据将自动显示在这里"
+                            android:text="等待 MQTT 数据..."
+                            android:textSize="14sp"
+                            android:textColor="#80868B"
+                            android:layout_marginTop="6dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="连接成功后数据将自动显示"
                             android:textSize="12sp"
-                            android:textColor="#CCCCCC"
-                            android:layout_marginTop="4dp" />
+                            android:textColor="#BDC1C6"
+                            android:layout_marginTop="2dp" />
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
-            <!-- JSON 原始数据 -->
-            <LinearLayout
+            <!-- 查看原始 JSON 按钮 -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="10dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:contentPadding="0dp"
+                app:strokeWidth="0dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:id="@+id/card_view_json">
 
-                <Button
-                    android:id="@+id/btn_toggle_json"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="36dp"
-                    android:text="▼ 展开原始 JSON"
-                    android:textSize="13sp"
-                    android:textColor="#1565C0"
-                    android:backgroundTint="#E3F2FD"
-                    app:cornerRadius="8dp" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/json_raw_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:layout_marginTop="4dp"
-                    app:cardElevation="1dp"
-                    app:cardCornerRadius="8dp"
-                    app:contentPadding="8dp">
+                    android:layout_height="52dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="4dp">
 
                     <TextView
-                        android:id="@+id/tv_json_raw"
-                        android:layout_width="match_parent"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:gravity="center"
+                        android:text="📄"
+                        android:textSize="18sp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/circle_icon_bg" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textSize="11sp"
-                        android:fontFamily="monospace"
-                        android:textColor="#1A237E"
-                        android:lineSpacingExtra="2dp"
-                        android:background="#F5F5F5"
-                        android:padding="8dp"
-                        android:text="" />
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="原始 JSON 数据"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#202124" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="查看完整的 JSON 数据详情"
+                            android:textSize="11sp"
+                            android:textColor="#5F6368"
+                            android:layout_marginTop="1dp" />
+                    </LinearLayout>
 
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:text="›"
+                        android:textSize="22sp"
+                        android:textColor="#BDC1C6" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
