@@ -22,14 +22,14 @@ class DataDashboardActivity : AppCompatActivity() {
 
     // 根据字段名分配不同的颜色主题
     private val colorThemes = listOf(
-        intArrayOf("#1A73E8", "#E8F0FE"), // 蓝色
-        intArrayOf("#34A853", "#E6F4EA"), // 绿色
-        intArrayOf("#FBBC04", "#FEF7E0"), // 黄色
-        intArrayOf("#EA4335", "#FCE8E6"), // 红色
-        intArrayOf("#9334E6", "#F3E8FD"), // 紫色
-        intArrayOf("#FF6D01", "#FEE8D6"), // 橙色
-        intArrayOf("#00ACC1", "#E0F7FA"), // 青色
-        intArrayOf("#E91E63", "#FCE4EC"), // 粉色
+        Pair(Color.parseColor("#1A73E8"), Color.parseColor("#E8F0FE")), // 蓝色
+        Pair(Color.parseColor("#34A853"), Color.parseColor("#E6F4EA")), // 绿色
+        Pair(Color.parseColor("#FBBC04"), Color.parseColor("#FEF7E0")), // 黄色
+        Pair(Color.parseColor("#EA4335"), Color.parseColor("#FCE8E6")), // 红色
+        Pair(Color.parseColor("#9334E6"), Color.parseColor("#F3E8FD")), // 紫色
+        Pair(Color.parseColor("#FF6D01"), Color.parseColor("#FEE8D6")), // 橙色
+        Pair(Color.parseColor("#00ACC1"), Color.parseColor("#E0F7FA")), // 青色
+        Pair(Color.parseColor("#E91E63"), Color.parseColor("#FCE4EC")), // 粉色
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,9 +87,9 @@ class DataDashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun addBeautifiedCard(key: String, value: Any, theme: IntArray) {
-        val accentColor = Color.parseColor(theme[0])
-        val bgColor = Color.parseColor(theme[1])
+    private fun addBeautifiedCard(key: String, value: Any, theme: Pair<Int, Int>) {
+        val accentColor = theme.first
+        val bgColor = theme.second
 
         val card = layoutInflater.inflate(R.layout.item_data_card, binding.dataCardContainer, false) as com.google.android.material.card.MaterialCardView
 

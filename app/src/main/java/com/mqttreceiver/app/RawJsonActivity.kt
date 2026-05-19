@@ -1,5 +1,8 @@
 package com.mqttreceiver.app
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
@@ -31,8 +34,8 @@ class RawJsonActivity : AppCompatActivity() {
         binding.btnCopy.setOnClickListener {
             val text = binding.tvJsonRaw.text.toString()
             if (text.isNotEmpty()) {
-                val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val clip = android.content.ClipData.newPlainText("MQTT Raw JSON", text)
+                val clipboard = getSystemService(ClipboardManager::class.java)
+                val clip = ClipData.newPlainText("MQTT Raw JSON", text)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
             }
